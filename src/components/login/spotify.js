@@ -14,7 +14,7 @@ const SPOTIFY_ENDPOINTS = {
 
 WebBrowser.maybeCompleteAuthSession();
 
-export default function SpotifyLogin ({ navigation, isLogged, title }) {
+export default function SpotifyLogin ({ onSuccess, isLogged, title }) {
     const [token, setToken] = useContext(TokenContext)
     let redirectUri = makeRedirectUri({
         scheme: 'maestro.app'
@@ -85,12 +85,7 @@ export default function SpotifyLogin ({ navigation, isLogged, title }) {
                 .then(data => data.text())
                 .then(async data => {
                     setToken(data)
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ 
-                            name: 'home',
-                        }]
-                    })
+                    onSuccess()
                 }).catch(e => console.log(e))
             }
         }

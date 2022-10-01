@@ -11,7 +11,7 @@ import * as FileSystem from 'expo-file-system';
 import { SocketContext } from "../store/socket"
 import { TokenContext } from "../store/token"
 
-export default Create = ({navigation, route}) => {
+export default Create = ({ navigation, route }) => {
     const socket = useContext(SocketContext)
     const [canLaunch, setCanLaunch] = useState(true)
     const [players, setPlayers] = useState([])
@@ -19,8 +19,10 @@ export default Create = ({navigation, route}) => {
     const [ready, setReady] = useState(false)
     const [token, setToken] = useContext(TokenContext)
 
-    let { params } = route 
+    let { params } = route
     const is_admin = params.is_admin || false
+    const playlist_data = params.playlist_data
+    const playlist_id = params.playlist_id
     const game_id = params.game_id
     const name = params.name || ""
     let game_id_pretty = params.game_id.toString().split("").join(" ")
@@ -30,10 +32,10 @@ export default Create = ({navigation, route}) => {
     async function ensureDirExists() {
         const dirInfo = await FileSystem.getInfoAsync(musicDir);
         if (!dirInfo.exists) {
-          console.log("Music directory doesn't exist, creating...");
-          await FileSystem.makeDirectoryAsync(musicDir, { intermediates: true });
+            console.log("Music directory doesn't exist, creating...");
+            await FileSystem.makeDirectoryAsync(musicDir, { intermediates: true });
         }
-    }      
+    }
 
     useEffect(() => {
         socket.current = io(config.API, {
@@ -46,8 +48,6 @@ export default Create = ({navigation, route}) => {
                 token: token
             }
         });
-
-        console.log("SOCKET SET")
 
         socket.current.on("load data", async (data) => {
             data = JSON.parse(data)
@@ -74,7 +74,7 @@ export default Create = ({navigation, route}) => {
             data = JSON.parse(data)
             navigation.reset({
                 index: 0,
-                routes: [{ 
+                routes: [{
                     name: 'game',
                     params: {
                         game_id: game_id,
@@ -85,74 +85,175 @@ export default Create = ({navigation, route}) => {
         })
     }, [])
 
+    const before = () => {
+        return (
+            <View>
+                <View
+                    style={{
+                        width: '100%',
+                        paddingLeft: 20,
+                        paddingRight: 20
+                    }}
+                >
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Bold",
+                        }]}
+                    >
+                        BLINDTEST CLASSIQUE
+                    </Text>
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Medium",
+                        }]}
+                    >
+                        Trouve le titre qui joue avant tout le monde ! Tous les titres sont dans la playlist suivante :
+                    </Text>
+                    <View
+                        style={{
+                            marginTop: 30,
+                            borderRadius: 5,
+                            borderColor: "#FFFFFF",
+                            borderWidth: 1,
+                        }}
+                    >
+                        <Playlist
+                            playlist_data={playlist_data}
+                            navigation={navigation}
+                        />
+                    </View>
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            marginTop: 40,
+                            fontFamily: "Gilroy-Bold",
+                        }]}
+                    >
+                        CODE DE CONNEXION
+                    </Text>
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Medium",
+                        }]}
+                    >
+                        Donne ce code de connexion à tout ceux qui veulent joindre la partie
+                    </Text>
+                </View>
+                <View
+                    style={{
+                        alignItems: "center"
+                    }}
+                >
+                    <Text
+                        style={{
+                            padding: 10,
+                            paddingRight: 15,
+                            paddingLeft: 15,
+                            color: "#FFFFFF",
+                            fontFamily: "Gilroy-SemiBold",
+                            textAlign: "center",
+                            marginTop: 30,
+                            fontSize: 16,
+                            borderColor: "#FFFFFF",
+                            borderRadius: 10,
+                            borderWidth: 2,
+                            width: '40%'
+                        }}
+                    >{game_id_pretty}</Text>
+                </View>
+                <View
+                    style={{
+                        width: '100%',
+                        marginTop: 30,
+                        paddingLeft: 20,
+                        paddingRight: 20
+                    }}
+                >
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Bold",
+                        }]}
+                    >
+                        PERSONNES PRESENTES
+                    </Text>
+                </View>
+            </View>
+        )
+    }
+
+    const is_admin_render = () => {
+        if (is_admin) {
+            return (
+                <View
+                    style={{
+                        width: '100%',
+                        alignItems: "center"
+                    }}
+                >
+                    <Button
+                        icon="rocket"
+                        mode="contained"
+                        color="#24ad34"
+                        style={{
+                            position: "absolute",
+                            bottom: 30,
+                            borderRadius: 30,
+                            paddingLeft: 10,
+                            paddingRight: 10,
+                            padding: 5
+                        }}
+                        onPress={() => socket.current.emit("launch game")}
+                    >
+                        Lancer le blindtest
+                    </Button>
+                </View>
+            )
+        } else {
+            return (
+                <View
+                    style={{
+                        width: '100%',
+                        alignItems: "center"
+                    }}
+                >
+                    <Button
+                        icon="rocket"
+                        mode="contained"
+                        color={ready ? "#d13843" : "#24ad34"}
+                        style={{
+                            position: "absolute",
+                            bottom: 30,
+                            borderRadius: 30,
+                            paddingLeft: 10,
+                            paddingRight: 10,
+                            padding: 5
+                        }}
+                        onPress={() => {
+                            setReady(!ready)
+                            socket.current.emit("ready")
+                        }}
+                    >
+                        {ready ? "pas prêt ! " : "prêt !"}
+                    </Button>
+                </View>
+            )
+        }
+    }
+
 
     return (
         <View
             style={styles.container}
         >
-            <Text
-                style={styles.text}
-            >
-                Utilisez le QRCode ou le code pour inviter vos amis   
-            </Text>
-            {/* <View
-                style={{
-                    padding: 5,
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 5,
-                    marginTop: 20
-                }}
-            >
-                <QRCode 
-                    size={200}
-                    value="fjefjefjeifjeijfeijfeifjeijfie"
-                />
-            </View> */}
-            <Text
-                style={{
-                    padding: 10,
-                    paddingRight: 15,
-                    paddingLeft: 15,
-                    color: "#FFFFFF",
-                    fontFamily: "Gilroy-SemiBold",
-                    textAlign: "center",
-                    marginTop: 15,
-                    fontSize: 16,
-                    borderColor: "#FFFFFF",
-                    borderRadius: 10,
-                    borderWidth: 2
-                }}
-            >{game_id_pretty}</Text>
-
-
-            <View 
-                style={{
-                    height: 1,
-                    marginTop: 20,
-                    backgroundColor: "#FFFFFF",
-                    width: '90%'
-                }}
-            />
-            <Text
-                style={{
-                    fontFamily: "Gilroy-SemiBold",
-                    color: "#FFFFFF",
-                    marginTop: 20,
-                    marginBottom: 10,
-                    fontSize: 15
-                }}
-            >
-                Personnes présentes dans la session
-            </Text>
             <FlatList
-                style={{
-                    marginTop: 10,
-                    width: '90%'
-                }}
                 contentContainerStyle={{
                     justifyContent: "center",
                     alignContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
                 }}
                 showsVerticalScrollIndicator={false}
                 numColumns={3}
@@ -164,53 +265,16 @@ export default Create = ({navigation, route}) => {
                             margin: 10
                         }}
                     >
-                        <WaitingPlayer {...i.item}/>
+                        <WaitingPlayer {...i.item} />
                     </View>
                 )
                 }
                 data={players}
-                extraData={(e) => console.log(e)}
+                ListHeaderComponent={before}
             />
-            {is_admin ?
-                <Button
-                    icon="rocket"
-                    mode="contained"
-                    color="#24ad34"
-                    style={{
-                        position: "absolute",
-                        bottom: 30,
-                        borderRadius: 30,
-                        paddingLeft: 10,
-                        paddingRight: 10,
-                        padding: 5
-                    }}
-                    onPress={() => socket.current.emit("launch game")}
-                >
-                    Lancer le blindtest
-                </Button>
-            :
-            <Button
-                icon="rocket"
-                mode="contained"
-                color={ready ? "#d13843" : "#24ad34"}
-                style={{
-                    position: "absolute",
-                    bottom: 30,
-                    borderRadius: 30,
-                    paddingLeft: 10,
-                    paddingRight: 10,
-                    padding: 5
-                }}
-                onPress={() => {
-                    setReady(!ready)
-                    socket.current.emit("ready")
-                }}
-            >
-                {ready ? "pas prêt ! " : "prêt !"} 
-            </Button>
-            }
+            {is_admin_render()}
         </View>
-    )   
+    )
 }
 
 const styles = StyleSheet.create({
@@ -220,9 +284,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#091227",
         flex: 1,
         flexDirection: "column",
-        alignItems: "center",
     },
-    logo:{
+    logo: {
         color: "#FFFFFF",
         fontFamily: "Gilroy-Black",
         paddingBottom: 50,
@@ -233,7 +296,6 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontFamily: "Gilroy-SemiBold",
         textAlign: "center",
-        width: '80%'
     },
     button: {
         borderRadius: 30,
@@ -243,7 +305,7 @@ const styles = StyleSheet.create({
         paddingRight: 15,
         paddingTop: 7,
         paddingBottom: 7,
-        minWidth:"87%"
+        minWidth: "87%"
     },
     divider: {
         marginTop: 20,

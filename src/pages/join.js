@@ -16,25 +16,40 @@ export default Join = ({navigation}) => {
     }
 
     useEffect(() => {
-        if (value.length == 6 && name.length > 1) {
+        if (value.length == 6) {
             setReady(true)
         }
-    }, [value, name])
+    }, [value])
 
     return (
         <View
-            style={styles.container}
+            style={[styles.container, {
+                textAlign: "left",
+                paddingLeft: 20,
+                paddingRight: 20
+            }]}
         >
-            <Text
-                style={{
-                    ...styles.text,
-                }}
-            >
-                Rentrez le code de la salle, puis votre nom d'utilisateur 😉
-            </Text>
+                <Text
+                    style={[styles.text, {
+                        textAlign: 'left',
+                        fontFamily: "Gilroy-Bold",
+                        marginTop: 30
+                    }]}
+                >
+                    REJOINDRE UN BLINDTEST 
+                </Text>
+                <Text
+                    style={[styles.text, {
+                        textAlign: 'left',
+                        fontFamily: "Gilroy-Medium",
+                        marginTop: 20
+                    }]}
+                >
+                    Renseigne le code de la room pour t'y connecter, n'importe qui dans la room peut te le donner
+                </Text>
             <View
                 style={{
-                    marginTop: 100,
+                    marginTop: 80,
                     width: "100%",
                     flexDirection: "column",
                     alignItems: "center",
@@ -55,20 +70,6 @@ export default Join = ({navigation}) => {
                     returnKeyType="done"
                 />
             </View>
-            <TextInput
-                disabled={value.length != 6}
-                mode="outlined"
-                style={{
-                    width: "90%",
-                    marginTop: 40
-                }}
-                value={name}
-                onChangeText={(e) => {
-                    setName(e)
-                }}
-                label="Pseudonyme"
-                returnKeyType="done"
-            />
             <Button
                 icon="arrow-right-bold-circle"
                 mode="contained"
@@ -126,8 +127,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         color: "#FFFFFF",
         fontFamily: "Gilroy-SemiBold",
-        textAlign: "center",
-        width: '80%'
+        width: '100%'
     },
     button: {
         borderRadius: 30,

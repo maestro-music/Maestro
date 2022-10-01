@@ -1,14 +1,21 @@
 import AsyncStorageLib from "@react-native-async-storage/async-storage"
 import { useContext, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from "react-native"
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Image, FlatList } from "react-native"
 import Playlist from "../components/playlist"
 import config from "../config"
+import jwtDecode from "jwt-decode";
 import { TokenContext } from "../store/token"
+import SpotifyLogin from "../components/login/spotify"
 
 export default Create = ({navigation}) => {
     const [playlist, setPlaylist] = useState(null)
     const [loading, setLoading] = useState(true)
     const [token, setToken] = useContext(TokenContext)
+
+    let decodedToken = null
+    if (token != "") {
+        decodedToken = jwtDecode(token)
+    }
 
     useEffect(() => {
         (async () => {
@@ -16,7 +23,9 @@ export default Create = ({navigation}) => {
                 headers: {
                     "authorization": "Bearer " + token
                 }
-            })).json()
+            })
+            .catch(e => console.log(e))
+            ).json()
             setPlaylist(data)
             setLoading(false)
         })()
@@ -56,6 +65,7 @@ export default Create = ({navigation}) => {
                                         navigation={navigation}
                                         playlist_data={p}
                                         setLoading={setLoading}
+                                        arrow
                                     />
                                 </View>
                             )

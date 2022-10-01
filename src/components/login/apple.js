@@ -5,7 +5,7 @@ import { Button } from "react-native-paper";
 import config from '../../config';
 import { TokenContext } from '../../store/token';
 
-export default function AppleLogin ({ navigation }) {
+export default function AppleLogin ({ onSuccess }) {
     const [hasAppleLogin, setHasAppleLogin] = useState(false)
     const [appleData, setAppleData] = useState(null)
     const [token, setToken] = useContext(TokenContext)
@@ -29,12 +29,7 @@ export default function AppleLogin ({ navigation }) {
         .then(data => data.text())
         .then(async data => {
             setToken(data)
-            navigation.reset({
-                index: 0,
-                routes: [{ 
-                    name: 'home',
-                }]
-            })
+            onSuccess()
         }).catch(e => console.log(e))
     }, [appleData])
 
@@ -85,6 +80,6 @@ const styles = StyleSheet.create({
         paddingRight: 15,
         paddingTop: 7,
         paddingBottom: 7,
-        minWidth:"87%"
+        width: "100%"
     },
 })

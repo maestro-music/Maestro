@@ -5,7 +5,7 @@ import AsyncStorageLib from "@react-native-async-storage/async-storage"
 import { useContext } from "react"
 import { TokenContext } from "../store/token"
 
-export default Playlist = ({ navigation, playlist_data, setLoading }) => {
+export default Playlist = ({ navigation, playlist_data, setLoading, arrow }) => {
     const [token, setToken] = useContext(TokenContext)
 
     const generate_new_game = async (playlist_id) => {
@@ -24,7 +24,7 @@ export default Playlist = ({ navigation, playlist_data, setLoading }) => {
         if (data.error) {
             alert("choose an other playlist pls")
         } else {
-            navigation.navigate("waiting", { game_id: data.game_id, playlist_id: playlist_data.id, is_admin: true })
+            navigation.navigate("waiting", { game_id: data.game_id, playlist_data: playlist_data, playlist_id: playlist_data.id, is_admin: true })
         }
     }
 
@@ -67,14 +67,17 @@ export default Playlist = ({ navigation, playlist_data, setLoading }) => {
                     {playlist_data.name.slice(0, 25)}{playlist_data.name.length > 25 ? "..." : ""}
                 </Text>
             </Pressable>
-            <IconButton
-                style={{
-                    marginRight: 15
-                }}
-                color="#091227"
-                icon="arrow-right"
-                onPress={() => generate_new_game(playlist_data.id)}
-            />
+            { arrow && (
+                <IconButton
+                    style={{
+                        width: 50,
+                        height: 60,
+                    }}
+                    color="#091227"
+                    icon="arrow-right"
+                    onPress={() => generate_new_game(playlist_data.id)}
+                />
+            )}
         </View>
     )
 }

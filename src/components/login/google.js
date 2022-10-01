@@ -6,7 +6,7 @@ import { Button } from "react-native-paper";
 import config from '../../config';
 import { TokenContext } from '../../store/token';
 
-export default function GoogleLogin ({ navigation }) {
+export default function GoogleLogin ({ onSuccess }) {
     const [token, setToken] = useContext(TokenContext)
 
     const [req, res, googlePromptAsync] = Google.useAuthRequest({
@@ -29,12 +29,7 @@ export default function GoogleLogin ({ navigation }) {
             .then(async data => {
                 console.log("data", data)
                 setToken(data)
-                navigation.reset({
-                    index: 0,
-                    routes: [{ 
-                        name: 'home',
-                    }]
-                })
+                onSuccess()
             }).catch(e => console.log(e))
         } else {
             console.log(res.error)

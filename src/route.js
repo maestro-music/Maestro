@@ -16,6 +16,7 @@ import Game from './pages/game';
 import Join from './pages/join';
 import { IconButton } from 'react-native-paper';
 import Settings from './pages/settings';
+import {FirstTimePage} from './pages/first_time';
 
 const Stack = createNativeStackNavigator()
 
@@ -26,6 +27,7 @@ export default App = () => {
             <TokenProvider>
             <StatusBar barStyle="light-content" />
             <Stack.Navigator
+                initialRouteName='home'
                 screenOptions={({navigation, route}) => ({
                     headerLeft: () => {
                         if (route.name != "game") {
@@ -33,7 +35,7 @@ export default App = () => {
                                 <View
                                     onTouchStart={() => navigation.goBack()}
                                 >
-                                    {["home", "login"].includes(route.name) ?  <React.Fragment /> : 
+                                    {["home", "login", "first_page"].includes(route.name) ?  <React.Fragment /> : 
                                         <Image 
                                             style={styles.arrow}
                                             source={ require("./assets/icon/arrow.png") }
@@ -60,6 +62,7 @@ export default App = () => {
                     }
                 })}
             >
+                <Stack.Screen name="first_page" component={FirstTimePage} />
                 <Stack.Screen name="login" component={Login} />
                 <Stack.Screen name="home" component={Home} />
                 <Stack.Screen name="create" component={Create} />

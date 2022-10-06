@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react"
-import { View, Text, StyleSheet, ScrollView } from "react-native" 
-import { Button } from "react-native-paper"
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native" 
+import { Button, DataTable } from "react-native-paper"
 import { SocketContext } from "../store/socket"
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -15,6 +15,7 @@ export default Game = ({ navigation, route }) => {
     const [gameRounds, setGameRounds] = useState(route.params.rounds)
     const [leader, setLeader] = useState([])
     const audio = useRef(null)
+    const [page, setPage] = useState(0)
 
     const launch_new_round = async (data) => {
         setGameState("game")
@@ -77,9 +78,9 @@ export default Game = ({ navigation, route }) => {
             case "game":
                 return "Quelle est la musique qui joue ?"
             case "leaderboard":
-                return "Leaderboard"
+                return "Classement"
             case "results":
-                return "Resultats"
+                return "Reponses"
             case "final":
                 return "Merci d'avoir joué!"
             default:
@@ -104,130 +105,84 @@ export default Game = ({ navigation, route }) => {
 
     const render_leaderboard = () => {
         return (
-            <ScrollView
+            <DataTable
                 style={{
-                    width: '100%'
+                    width: '100%',
+                    flex: gameState == "final" ? null: 1,
+                    backgroundColor: "white"
                 }}
             >
+                <DataTable.Header>
+                    <DataTable.Title >Place</DataTable.Title>
+                    <DataTable.Title style={{flex: 3}}>Pseudo</DataTable.Title>
+                    <DataTable.Title numeric>Points</DataTable.Title>
+                </DataTable.Header>
                 {leader.sort((a,b) => b.score - a.score).map((user, i) => (
-                    <View
-                        key={i}
-                        style={{
-                            flexDirection: 'row',
-                            width: '100%',
-                            paddingLeft: 20,
-                            paddingRight: 20,
-                            justifyContent:'space-between'
-                        }}
-                    >
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'flex-start'
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    color: "white"
-                                }}
-                            >{i+1}</Text>
-                            <Text
-                                style={{
-                                    color: "white",
-                                    marginLeft: 20
-                                }}
-                            >
-                                {user.name}
-                            </Text>
-                        </View>
-                        <Text
-                            style={{
-                                color: "white"
-                            }}
-                        >
-                            {user.score}
-                        </Text>
-                    </View>
+                    <DataTable.Row>
+                        <DataTable.Cell>{i + 1}</DataTable.Cell>
+                        <DataTable.Cell style={{flex: 3}}>{user.name}</DataTable.Cell>
+                        <DataTable.Cell numeric>{user.score}</DataTable.Cell>
+                    </DataTable.Row>
                 ))}
-            </ScrollView>
+            </DataTable>
         )
     }
 
     const render_music_text = (text) => {
-        if (text.length > 30) {
-            return text.slice(0, 30) + "..."
+        if (text.length > 40) {
+            return text.slice(0, 40) + "..."
         } else {
             return text
         }
     }
 
     const render_final = () => {
-        return <View
+        return <ScrollView
+            contentContainerStyle={{
+                alignItems: "center",
+            }}
             style={styles.container}
         >
             <Text
-                style={{
-                    color: "white",
-                    marginTop: 20,
-                    marginBottom: 20,
-                }}
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Bold",
+                    marginLeft: 40,
+                    marginBottom: 20
+                }]}
             >
-                Les musiques de la partie
+                LE LEADERBOARD FINAL
             </Text>
-            {gameRounds.map((i, ii) => (
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        width: '100%',
-                        paddingLeft: 20,
-                        paddingRight: 20,
-                        justifyContent:'space-between'
-                    }}
-                >
-                    <Text
-                        style={{
-                            color: "white"
-                        }}
-                    >{ii + 1}</Text>
-                    <Text
-                        style={{
-                            color: "white"
-                        }}
-                    >{render_music_text(i.choices[i.result_index])}</Text>
-                </View>
-            ))}
+            {render_leaderboard()}
             <Text
-                style={{
-                    color: "white",
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Bold",
+                    marginLeft: 40,
                     marginTop: 20,
                     marginBottom: 20
-                }}
-            >Leaderboard final</Text>
-            {render_leaderboard()}
-            <Button
-                icon="rocket"
-                mode="contained"
-                color="red"
+                }]}
+            >
+                TOUTES LES MUSIQUES JOUEES
+            </Text>
+            <DataTable
                 style={{
-                    position: "absolute",
-                    bottom: 30,
-                    borderRadius: 30,
-                    paddingLeft: 10,
-                    paddingRight: 10,
-                    padding: 5
-                }}
-                onPress={() => {
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ 
-                            name: 'home',
-                        }],
-                    });
+                    width: '100%',
+                    backgroundColor: "white"
                 }}
             >
-                Revenir au menu
-            </Button>
-        </View>
+                <DataTable.Header>
+                    <DataTable.Title style={{flex: 3}} numberOfLines={2}>Musique</DataTable.Title>
+                    <DataTable.Title numeric>Passage</DataTable.Title>
+                </DataTable.Header>
+                {gameRounds.map((i, ii) => (
+                    <DataTable.Row>
+                        <DataTable.Cell style={{flex: 3}}>{i.choices[i.result_index]}</DataTable.Cell>
+                        <DataTable.Cell numeric>{ii + 1}</DataTable.Cell>
+                    </DataTable.Row>
+                ))}
+            </DataTable>
+        </ScrollView>
     }
 
     // render les results du round
@@ -249,7 +204,14 @@ export default Game = ({ navigation, route }) => {
         }
 
         return (
-            <View>
+            <View
+                style={{
+                    width: '100%',
+                    alignItems: "center",
+                    paddingLeft: 20,
+                    paddingRight: 20
+                }}
+            >
                 {choices.map((m, i) => (
                     <Button
                         style={styles.button}
@@ -272,7 +234,14 @@ export default Game = ({ navigation, route }) => {
         let choices = gameRounds[round].choices
         if (choices) {
             return (
-                <View>
+                <View
+                    style={{
+                        width: '100%',
+                        alignItems: "center",
+                        paddingLeft: 20,
+                        paddingRight: 20
+                    }}
+                >
                     {choices.map((m, i) => (
                         <Button
                             style={styles.button}
@@ -305,17 +274,77 @@ export default Game = ({ navigation, route }) => {
 
     return (
         <View
-            style={styles.container}
+            style={[styles.container, {
+                alignItems: "flex-start",
+                justifyContent: "flex-start"
+            }]}
         >
+            {gameState != "final" && (
+                <Text
+                    style={[styles.text, {
+                        textAlign: 'left',
+                        fontFamily: "Gilroy-Bold",
+                        marginLeft: 20
+                    }]}
+                >
+                    BLINDTEST CLASSIQUE
+                </Text>
+            )}
+            {gameState == "final" && (
+                <Image 
+                    source={require("../assets/logo/logo.png")}
+                    style={{
+                        width: 150,
+                        height: 40,
+                        marginBottom: 10,
+                        marginLeft: 20,
+                    }}
+                />
+            )}
+            
             <Text
                 style={{
                     ...styles.text,
-                    marginBottom: 20
+                    textAlign: "left",
+                    marginBottom: 40,
+                    marginLeft: 20,
                 }}
             >
                 {render_game_status()}
             </Text>
             {render()}
+            {gameState == "final" && (
+                <View
+                    style={{
+                        alignItems: "center",
+                        width: "100%"
+                    }}
+                >
+                <Button
+                    icon="door"
+                    mode="contained"
+                    color="red"
+                    style={{
+                        position: "absolute",
+                        bottom: 30,
+                        borderRadius: 30,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        padding: 5
+                    }}
+                    onPress={() => {
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ 
+                                name: 'home',
+                            }],
+                        });
+                    }}
+                >
+                    Revenir au menu
+                </Button>
+                </ View>
+            )}
         </View>
     )
 }
@@ -327,7 +356,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#091227",
         flex: 1,
         flexDirection: "column",
-        alignItems: "center",
     },
     logo:{
         color: "#FFFFFF",
@@ -339,8 +367,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         color: "#FFFFFF",
         fontFamily: "Gilroy-SemiBold",
-        textAlign: "center",
-        width: '80%'
+        width: '100%'
     },
     button: {
         borderRadius: 30,
@@ -352,7 +379,7 @@ const styles = StyleSheet.create({
         paddingRight: 15,
         paddingTop: 7,
         paddingBottom: 7,
-        minWidth:"87%"
+        width: '100%'
     },
     divider: {
         marginTop: 20,

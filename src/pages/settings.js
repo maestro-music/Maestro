@@ -1,18 +1,35 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useContext, useEffect, useState } from "react"
-import { Text, View } from "react-native"
+import { Text, View, Keyboard } from "react-native"
 import SpotifyLogin from "../components/login/spotify"
 import styles from "../components/style/default"
-import { Button, TextInput } from "react-native-paper";
+import { Button, HelperText, TextInput } from "react-native-paper";
 import jwtDecode from "jwt-decode"
 import { TokenContext } from "../store/token"
+import config from "../config"
 
 export default function Settings ({ navigation }) {
-    const [token, setToken] = useContext(TokenContext)
-    
-    let decodedToken = null
-    if (token != "") {
-        decodedToken = jwtDecode(token)
+    const [token, setToken, decodedToken, setDecoded] = useContext(TokenContext)
+    const [name, setName] = useState("")
+
+    const change_pseudo = () => {
+        fetch(config.API + "/profil/name", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                name: name
+            })
+        }).then(t => t.text())
+        .then(data => {
+            setToken(data)
+            alert("Votre pseudo a été changé!")
+            setName("")
+            Keyboard.dismiss()
+        })
+        .catch(e => console.log(e))
     }
 
     return (
@@ -28,7 +45,7 @@ export default function Settings ({ navigation }) {
                     marginBottom: 30,
                 }}
             >
-                Settings
+                Paramètres
             </Text>
             <View
                 style={{
@@ -45,7 +62,7 @@ export default function Settings ({ navigation }) {
                         fontSize: 16
                     }}
                 >
-                    Liaison avec Spotify
+                   Lier son compte à Spotify 
                 </Text>
                 {decodedToken && decodedToken.spotify ? 
                     <Text
@@ -75,21 +92,32 @@ export default function Settings ({ navigation }) {
                         fontSize: 16
                     }}
                 >
-                    Pseudo du compte
+                    Changer de pseudo
                 </Text>
                 <TextInput 
-                    label="Ton meilleur pseudo"
+                    label={decodedToken?.name}
+                    value={name}
                     returnKeyType="done"
+                    error={name.length > 0 && name.length < 3}
+                    onChangeText={setName}
                 />
-                <Button
-                    style={[styles.button, {
-                        alignContent: 'center',
-                        marginTop: 20
-                    }]}
-                    labelStyle={styles.text}
-                >
-                    Valider le nouveau pseudo
-                </Button>
+                {name.length > 0 && name.length < 3 && (
+                    <HelperText type="error">
+                        Le pseudo doit faire au moins 3 lettres
+                    </HelperText>
+                )}
+                {name.length >= 3 && (
+                    <Button
+                        style={[styles.button, {
+                            alignContent: 'center',
+                            marginTop: 20
+                        }]}
+                        labelStyle={styles.text}
+                        onPress={change_pseudo}
+                    >
+                        Valider le nouveau pseudo
+                    </Button>
+                )}
             </View>
             <Button
                 mode="outlined"
@@ -105,6 +133,8 @@ export default function Settings ({ navigation }) {
                 }}
                 icon="door"
                 onPress={async () => {
+                    await AsyncStorage.clear()
+                    setDecoded(null)
                     setToken("")
                     navigation.navigate("login")
                 }}

@@ -1,15 +1,47 @@
-import { useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { View, Text, Image } from "react-native"
 import { Button, TextInput } from "react-native-paper"
 import AppleLogin from "../components/login/apple"
 import GoogleLogin from "../components/login/google"
 import SpotifyLogin from "../components/login/spotify"
 import styles from "../components/style/default"
+import { TokenContext } from "../store/token"
+import config from "../config"
 
-export const FirstTimePage = ({navigation}) => {
+export const FirstTimePage = ({navigation, route}) => {
+    const [token, setToken, decoded] = useContext(TokenContext)
     const [page, setPage] = useState("first")
     const [provider, setProvider] = useState("")
-    
+    const [name, setName] = useState("")
+
+    useEffect(() => {
+        console.log("token changed", decoded)
+        if (decoded && decoded.name != "") {
+            setPage("first")
+            console.log("DECODED NAME", decoded.name)
+            navigation.navigate("home")
+        }
+    }, [token, decoded])
+
+    const change_pseudo = () => {
+        fetch(config.API + "/profil/name", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                name: name
+            })
+        }).then(t => t.text())
+        .then(data => {
+            setPage("first")
+            setToken(data)
+            navigation.navigate("home")
+        })
+        .catch(e => console.log(e))
+    }
+
     const firstOnSuccess = (platform) => {
         if (platform == "spotify") {
             setProvider("spotify")
@@ -129,7 +161,7 @@ export const FirstTimePage = ({navigation}) => {
                 <View
                     style={{marginTop: 60, width: '100%'}}
                 >
-                    <SpotifyLogin onSuccess={() => {
+                    <SpotifyLogin isLogged onSuccess={() => {
                         setPage("third")
                     }}/>
                     <Button
@@ -198,6 +230,8 @@ export const FirstTimePage = ({navigation}) => {
                     <TextInput 
                         label="Ton meilleur pseudo"
                         returnKeyType="done"
+                        value={name}
+                        onChangeText={setName}
                     />
                     <Button
                         style={[styles.button, {
@@ -205,6 +239,7 @@ export const FirstTimePage = ({navigation}) => {
                             marginTop: 40
                         }]}
                         labelStyle={styles.text}
+                        onPress={() => {change_pseudo()}}
                     >
                         Valider
                     </Button>

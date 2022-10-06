@@ -1,45 +1,78 @@
 import React, { useContext, useEffect, useState } from "react"
-import { View, StyleSheet, Image, Text, FlatList, ScrollView, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Image, Text, FlatList, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Button } from "react-native-paper";
-import Storage from '@react-native-async-storage/async-storage';
-import config from "../config"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import jwtDecode from "jwt-decode";
+import config from "../config";
 import { TokenContext } from "../store/token";
 
+
+
 export default function LoginView ({navigation}) {
-    const [token, setToken] = useContext(TokenContext)
-    
-    let decodedToken = null
-    if (token != "") {
-        decodedToken = jwtDecode(token)
+    const [token, setToken, decodedToken] = useContext(TokenContext)
+    const [data, setData] = useState([])
+
+    let spotify = {
+        name: "spotify",
+        image: require("../assets/playlist/perso.png"),
+        local: true,
+        onPress: () => {
+            navigation.navigate("create")
+        }
     }
 
-    const data = [
-        {
-            name: "Années 80",
-            image: require("../assets/playlist/perso.png"),
-            onPress: () => {
-                navigation.navigate("create")
+    const generate_special_game = async (playlist_id) => {
+        let req_data = await fetch(config.API + "/game", {
+            method: "POST",
+            headers: {
+                'authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                playlist_id: playlist_id,
+                special: true
+            })
+        })
+        let data = await req_data.json()
+        if (data.error) {
+            alert("choose an other playlist pls")
+        } else {
+            navigation.navigate("waiting", { game_id: data.game_id, is_admin: true })
+        }
+    }
+
+    useEffect(() => {
+        (async () => {
+            let rdata = await fetch(config.API + "/maestro_playlist", {
+                method: "GET",
+                headers: {
+                    "authorization": "Bearer " + token
+                }
+            })
+            let datam = await rdata.json()
+            datam = datam.map(i => ({
+                ...i,
+                onPress: () => generate_special_game(i.id)
+            }))
+            if (decodedToken && decodedToken.spotify) {
+                setData(data => [spotify, ...datam])
+            } else {
+                setData(datam)
             }
-        }, 
-        {
-            name: "Années 80",
-            image: require("../assets/playlist/annee80.png")
-        }, 
-        {
-            name: "Top 50",
-            image: require("../assets/playlist/top.png")
-        }, 
-        {
-            name: "Rock",
-            image: require("../assets/playlist/rock.png")
-        }, 
-        {
-            name: "Rap Français",
-            image: require("../assets/playlist/rap.png")
-        },
-    ]
+        })()
+    }, [])
+
+    useEffect(() => {
+        if (decodedToken && decodedToken.spotify) {
+            if (data.filter(i => i.name == "spotify").length == 0) {
+                setData(data => [spotify, ...data])
+            }
+        }
+    }, [decodedToken])
+
+    if (data.length == 0) {
+        return <View>
+            <ActivityIndicator />
+        </View>
+    }
 
     return (
         <ScrollView 
@@ -103,7 +136,11 @@ export default function LoginView ({navigation}) {
                             >
                                 <Image 
                                     style={{ height: 125, width: 125, marginLeft: 20, marginRight: (index == data.length - 1) ? 20 : 0}} 
-                                    source={item.image}
+                                    source={
+                                        item.local ? 
+                                        item.image :
+                                        {uri: item.image}
+                                     }
                                 />
                             </TouchableOpacity>
                         );

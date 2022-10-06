@@ -27,7 +27,7 @@ export default App = () => {
             <TokenProvider>
             <StatusBar barStyle="light-content" />
             <Stack.Navigator
-                initialRouteName='home'
+                initialRouteName='login'
                 screenOptions={({navigation, route}) => ({
                     headerLeft: () => {
                         if (route.name != "game") {
@@ -62,8 +62,7 @@ export default App = () => {
                     }
                 })}
             >
-                <Stack.Screen name="first_page" component={FirstTimePage} />
-                <Stack.Screen name="login" component={Login} />
+                <Stack.Screen name="login" component={FirstTimePage} />
                 <Stack.Screen name="home" component={Home} />
                 <Stack.Screen name="create" component={Create} />
                 <Stack.Screen name="playlist" component={Playlist} />

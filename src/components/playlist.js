@@ -1,8 +1,8 @@
 import { Button, IconButton, List } from "react-native-paper"
-import { Image, View, Text, Pressable } from "react-native"
+import { Image, View, Text, Pressable, ActivityIndicator } from "react-native"
 import config from "../config"
 import AsyncStorageLib from "@react-native-async-storage/async-storage"
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import { TokenContext } from "../store/token"
 
 export default Playlist = ({ navigation, playlist_data, setLoading, arrow }) => {
@@ -24,7 +24,15 @@ export default Playlist = ({ navigation, playlist_data, setLoading, arrow }) => 
         if (data.error) {
             alert("choose an other playlist pls")
         } else {
-            navigation.navigate("waiting", { game_id: data.game_id, playlist_data: playlist_data, playlist_id: playlist_data.id, is_admin: true })
+            navigation.reset({
+                index: 0,
+                routes: [{
+                    name: "home"
+                }, {
+                    name: "waiting",
+                    params: { game_id: data.game_id, is_admin: true }
+                }]
+            })
         }
     }
 
@@ -44,7 +52,7 @@ export default Playlist = ({ navigation, playlist_data, setLoading, arrow }) => 
                     alignItems: "center",
                     backgroundColor: "#FFFFFF",
                 }}
-                onPress={() => navigation.navigate("playlist", { playlist_data })}
+                onPress={() => navigation ? navigation.navigate("playlist", { playlist_data }) : null}
             >
                 <Image
                     source={{

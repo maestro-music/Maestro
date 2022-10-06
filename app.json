@@ -3,7 +3,7 @@
     "name": "Maestro",
     "slug": "maestro",
     "scheme": "maestro.app",
-    "version": "1.0.5",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +21,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.planchon.maestro",
-      "buildNumber": "10",
+      "buildNumber": "12",
       "usesAppleSignIn": true
     },
     "android": {
@@ -30,13 +30,18 @@
         "backgroundColor": "#091227"
       },
       "package": "io.planchon.maestro",
-      "versionCode": 10
+      "versionCode": 12
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "sentry-expo"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0ca83587-52b9-4d91-93b9-6ffaf1730990"
+      }
+    }
   }
 }

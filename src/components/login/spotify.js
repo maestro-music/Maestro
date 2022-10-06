@@ -70,6 +70,9 @@ export default function SpotifyLogin ({ onSuccess, isLogged, title }) {
                 .then(data => data.text())
                 .then(async token => {
                     setToken(token)
+                    if (onSuccess) {
+                        onSuccess()
+                    }
                 }).catch(e => console.log("error", e))
             } else {
                 fetch(config.API + "/login/spotify", {
@@ -85,7 +88,9 @@ export default function SpotifyLogin ({ onSuccess, isLogged, title }) {
                 .then(data => data.text())
                 .then(async data => {
                     setToken(data)
-                    onSuccess()
+                    if (onSuccess) {
+                        onSuccess()
+                    }
                 }).catch(e => console.log(e))
             }
         }

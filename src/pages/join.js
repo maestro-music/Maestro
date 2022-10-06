@@ -1,17 +1,33 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Text, View, StyleSheet } from "react-native"
 import { Button, TextInput } from "react-native-paper";
 import KeycodeInput from "../components/test";
+import config from "../config";
+import { TokenContext } from "../store/token";
 
 export default Join = ({navigation}) => {
+    const [token] = useContext(TokenContext)
     const [value, setValue] = useState('');
     const [name, setName] = useState('')
     const [ready, setReady] = useState(false)
 
-    const join_room = () => {
-        navigation.navigate("waiting", {
-            game_id: value,
-            name: name
+    const join_room = async () => {
+        await fetch(config.API + "/game/" + value, {
+            method: "GET",
+            headers: {
+                "authorization": "Bearer " + token
+            }
+        }).then(d => d.json())
+        .then(data => {
+            console.log(data)
+            if (data.exists) {
+                navigation.navigate("waiting", {
+                    game_id: value,
+                    name: name
+                })
+            } else {
+                alert("cette room n'existe pas")
+            }
         })
     }
 

@@ -27,7 +27,6 @@ export default function GoogleLogin ({ onSuccess }) {
             })
             .then(data => data.text())
             .then(async data => {
-                console.log("data", data)
                 setToken(data)
                 onSuccess()
             }).catch(e => console.log(e))

@@ -1,6 +1,6 @@
 import AsyncStorageLib from "@react-native-async-storage/async-storage"
 import { useContext, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView, FlatList, SafeAreaView } from "react-native"
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, FlatList, SafeAreaView, TouchableOpacity } from "react-native"
 import Playlist from "../components/playlist"
 import config from "../config"
 import { io } from "socket.io-client"
@@ -18,11 +18,11 @@ export default Create = ({ navigation, route }) => {
     const [downloadFinished, setDownloadFinished] = useState(false)
     const [ready, setReady] = useState(false)
     const [token, setToken] = useContext(TokenContext)
+    const [playlist_data, setPlaylistData] = useState({})
+    const [loading, setLoading] = useState(true)
 
     let { params } = route
     const is_admin = params.is_admin || false
-    const playlist_data = params.playlist_data
-    const playlist_id = params.playlist_id
     const game_id = params.game_id
     const name = params.name || ""
     let game_id_pretty = params.game_id.toString().split("").join(" ")
@@ -38,6 +38,17 @@ export default Create = ({ navigation, route }) => {
     }
 
     useEffect(() => {
+        fetch(config.API + "/game/" + game_id + "/playlist", {
+            method: "GET",
+            headers: {
+                "authorization": "Bearer " + token
+            }
+        }).then(data => data.json())
+        .then(data => {
+            setPlaylistData(data.playlist_data)
+            setLoading(false)
+        })
+
         socket.current = io(config.API, {
             query: {
                 game_id: game_id,
@@ -121,7 +132,6 @@ export default Create = ({ navigation, route }) => {
                     >
                         <Playlist
                             playlist_data={playlist_data}
-                            navigation={navigation}
                         />
                     </View>
                     <Text
@@ -244,6 +254,13 @@ export default Create = ({ navigation, route }) => {
         }
     }
 
+    if (loading) {
+        return <View
+            style={styles.container}
+        >
+            <ActivityIndicator />
+        </View>
+    }
 
     return (
         <View

@@ -6,6 +6,7 @@ import * as Sentry from 'sentry-expo';
 
 import App from "./src/route"
 import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 Sentry.init({
     dsn: 'https://0ef2d032e7234b9a80a5e8e6cbf681e0@o1341716.ingest.sentry.io/6752715',
@@ -40,9 +41,8 @@ export default function EntryPoint() {
             "Gilroy-UltraLightItalic": require("./src/assets/fonts/Gilroy-UltraLightItalic.ttf"),
         }
     );
-    
+
     useEffect(() => {
-        
         if (fontsLoaded) SplashScreen.hideAsync()
     }, [fontsLoaded])
 

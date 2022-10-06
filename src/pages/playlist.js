@@ -1,12 +1,52 @@
 import AsyncStorageLib from "@react-native-async-storage/async-storage"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from "react-native"
 import Music from "../components/music"
 import Playlist from "../components/playlist"
 import config from "../config"
+import { TokenContext } from "../store/token"
 
 export default Create = ({route}) => {
-    let playlist_data = route.params.playlist_data
+    const [token] = useContext(TokenContext)
+    const [loading, setLoading] = useState(true)
+    const [data, setData] = useState(route.params.playlist_data)
+    let is_logged = route.params.is_logged 
+    let game_id = route.params.game_id
+
+    useEffect(() => {
+        if (is_logged == false) {
+            fetch(config.API + "/game/" + game_id + "/playlist", {
+                method: "GET",
+                headers: {
+                    "authorization": "Bearer " + token
+                }
+            }).then(data => data.json())
+            .then(data => {
+                setData(data.playlist_data)
+                setLoading(false)
+            })
+            .catch(e => console.log(e))
+        } else {
+            fetch(config.API + "/playlist/" + data.id, {
+                method: "GET",
+                headers: {
+                    "authorization": "Bearer " + token
+                }
+            }).then(data => data.json())
+            .then(data => {
+                console.log(data)
+                setData(data)
+                setLoading(false)
+            })
+            .catch(e => console.log(e))
+        }
+    }, [])
+
+    if (loading) {
+        return <View style={styles.container} >
+            <ActivityIndicator />
+        </View>
+    }
 
     return (
         <View
@@ -15,7 +55,7 @@ export default Create = ({route}) => {
             <Text
                 style={styles.text}
             >
-                Playlist : {playlist_data.name}
+                Playlist : {data.name || route.params.playlist_data.name}
             </Text>
                 <ScrollView
                     style={{
@@ -26,9 +66,10 @@ export default Create = ({route}) => {
                     }}
                 >
                     {
-                        playlist_data.items.slice(0, 20).map(p => {
+                        data.items.slice(0, 20).map((p, i) => {
                             return (
                                 <View
+                                    key={i}
                                     style={{
                                         marginTop: 15,
                                         borderRadius: 5,

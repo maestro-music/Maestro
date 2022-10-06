@@ -36,18 +36,26 @@ export default function LoginView ({navigation}) {
                     marginBottom: 50
                 }}
             >Deviens le maitre de la musique 🎷</Text>
-            <View>
-                <GoogleLogin navigation={navigation} />
-            </View>
             <View
-                style={{marginTop: 15}}
+                style={{
+                    width: '100%',
+                    paddingLeft: 20,
+                    paddingRight: 20
+                }}
             >
-                <SpotifyLogin navigation={navigation} />
-            </View>
-            <View
-                style={{marginTop: 15}}
-            >
-                <AppleLogin navigation={navigation} />
+                <View>
+                    <GoogleLogin navigation={navigation} />
+                </View>
+                <View
+                    style={{marginTop: 15}}
+                >
+                    <SpotifyLogin navigation={navigation} />
+                </View>
+                <View
+                    style={{ marginTop: 15 }}
+                >
+                    <AppleLogin navigation={navigation} />
+                </View>
             </View>
             <Text
                 style={{
@@ -56,7 +64,7 @@ export default function LoginView ({navigation}) {
                     bottom: 20,
                 }}
             >
-                made in 🇫🇷
+                made by Paul 
             </Text>
         </View>
     )

@@ -7,6 +7,7 @@ import SpotifyLogin from "../components/login/spotify"
 import styles from "../components/style/default"
 import { TokenContext } from "../store/token"
 import config from "../config"
+import NoAuthLogin from "../components/login/noauth"
 
 export const FirstTimePage = ({navigation, route}) => {
     const [token, setToken, decoded] = useContext(TokenContext)
@@ -78,7 +79,7 @@ export const FirstTimePage = ({navigation, route}) => {
                 <Text style={[styles.text, {
                     marginTop: 25
                 }]}>
-                    Pour commencer à utiliser l'application connecte toi avec Google, Spotify ou Apple 
+                    Connecte toi avec Spotify si tu veux utiliser tes playlist pour créer des blindtest, si tu veux juste jouer connecte toi en pirate
                 </Text>
                 <View
                     style={{
@@ -89,13 +90,13 @@ export const FirstTimePage = ({navigation, route}) => {
                         marginTop: 50
                     }}
                 >
-                    <View
+                    {/* <View
                         style={{width: '100%'}}
                     >
                         <GoogleLogin onSuccess={() => {
                             firstOnSuccess("google")
                         }}/>
-                    </View>
+                    </View> */}
                     <View
                         style={{marginTop: 20, width: '100%'}}
                     >
@@ -108,10 +109,19 @@ export const FirstTimePage = ({navigation, route}) => {
                     <View
                         style={{marginTop: 20, width: '100%'}}
                     >
+                        <NoAuthLogin 
+                            onSuccess={() => {
+                                firstOnSuccess("noauth")
+                            }}
+                        />
+                    </View>
+                    {/* <View
+                        style={{marginTop: 20, width: '100%'}}
+                    >
                         <AppleLogin onSuccess={() => {
                             firstOnSuccess("apple")
                         }} />
-                    </View>
+                    </View> */}
                 </View>
             </View>
         )

@@ -5,7 +5,7 @@ import KeycodeInput from "../components/test";
 import config from "../config";
 import { TokenContext } from "../store/token";
 
-export default Join = ({navigation}) => {
+export default Join = ({ navigation }) => {
     const [token] = useContext(TokenContext)
     const [value, setValue] = useState('');
     const [name, setName] = useState('')
@@ -18,17 +18,16 @@ export default Join = ({navigation}) => {
                 "authorization": "Bearer " + token
             }
         }).then(d => d.json())
-        .then(data => {
-            console.log(data)
-            if (data.exists) {
-                navigation.navigate("waiting", {
-                    game_id: value,
-                    name: name
-                })
-            } else {
-                alert("cette room n'existe pas")
-            }
-        })
+            .then(data => {
+                if (data.exists) {
+                    navigation.navigate("waiting", {
+                        game_id: value,
+                        name: name
+                    })
+                } else {
+                    alert("cette room n'existe pas")
+                }
+            })
     }
 
     useEffect(() => {
@@ -45,24 +44,24 @@ export default Join = ({navigation}) => {
                 paddingRight: 20
             }]}
         >
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Bold",
-                        marginTop: 30
-                    }]}
-                >
-                    REJOINDRE UN BLINDTEST 
-                </Text>
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Medium",
-                        marginTop: 20
-                    }]}
-                >
-                    Renseigne le code de la room pour t'y connecter, n'importe qui dans la room peut te le donner
-                </Text>
+            <Text
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Bold",
+                    marginTop: 30
+                }]}
+            >
+                REJOINDRE UN BLINDTEST
+            </Text>
+            <Text
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Medium",
+                    marginTop: 20
+                }]}
+            >
+                Renseigne le code de la room pour t'y connecter, n'importe qui dans la room peut te le donner
+            </Text>
             <View
                 style={{
                     marginTop: 80,
@@ -72,7 +71,7 @@ export default Join = ({navigation}) => {
                     justifyContent: "center"
                 }}
             >
-                <TextInput 
+                <TextInput
                     label="Code de la room"
                     keyboardType="numeric"
                     mode="outlined"
@@ -81,7 +80,7 @@ export default Join = ({navigation}) => {
                         marginTop: 40
                     }}
                     onChangeText={setValue}
-                    value={value}    
+                    value={value}
                     maxLength={6}
                     returnKeyType="done"
                 />
@@ -106,23 +105,23 @@ export default Join = ({navigation}) => {
 }
 
 const styles2 = StyleSheet.create({
-    root: {flex: 1, padding: 20},
-    title: {textAlign: 'center', fontSize: 30},
-    codeFieldRoot: {marginTop: 20},
+    root: { flex: 1, padding: 20 },
+    title: { textAlign: 'center', fontSize: 30 },
+    codeFieldRoot: { marginTop: 20 },
     cell: {
-      width: 40,
-      height: 40,
-      lineHeight: 38,
-      fontSize: 24,
-      borderWidth: 2,
-      borderColor: '#00000030',
-      textAlign: 'center',
+        width: 40,
+        height: 40,
+        lineHeight: 38,
+        fontSize: 24,
+        borderWidth: 2,
+        borderColor: '#00000030',
+        textAlign: 'center',
     },
     focusCell: {
-      borderColor: '#000',
+        borderColor: '#000',
     },
-  });
-  
+});
+
 
 const styles = StyleSheet.create({
     container: {
@@ -133,7 +132,7 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         alignItems: "center",
     },
-    logo:{
+    logo: {
         color: "#FFFFFF",
         fontFamily: "Gilroy-Black",
         paddingBottom: 50,
@@ -154,7 +153,7 @@ const styles = StyleSheet.create({
         paddingRight: 15,
         paddingTop: 7,
         paddingBottom: 7,
-        minWidth:"87%"
+        minWidth: "87%"
     },
     divider: {
         marginTop: 20,

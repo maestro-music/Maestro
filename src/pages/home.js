@@ -3,12 +3,16 @@ import { View, StyleSheet, Image, Text, FlatList, ScrollView, TouchableOpacity, 
 import { Button } from "react-native-paper";
 import config from "../config";
 import { TokenContext } from "../store/token";
+import { WaitingView } from "../components/waiting"
+import { SocketContext } from "../store/socket";
 
-
-
-export default function LoginView ({navigation}) {
+export default function LoginView({ navigation, route }) {
     const [token, setToken, decodedToken] = useContext(TokenContext)
+    const socket = useContext(SocketContext)
     const [data, setData] = useState([])
+
+    const [categories, setCategories] = useState([])
+    const [individual, setIndividual] = useState([])
 
     let spotify = {
         name: "spotify",
@@ -40,6 +44,11 @@ export default function LoginView ({navigation}) {
     }
 
     useEffect(() => {
+        if (socket.current && (route.params && !route.params.socket_shoud_not_quit)) {
+            console.log(route.params)
+            socket.current.disconnect()
+            console.log("socket disconnected")
+        }
         (async () => {
             let rdata = await fetch(config.API + "/maestro_playlist", {
                 method: "GET",
@@ -48,175 +57,236 @@ export default function LoginView ({navigation}) {
                 }
             })
             let datam = await rdata.json()
-            datam = datam.map(i => ({
+
+            let cat = datam.categories
+            cat = cat.map(c => ({
+                ...c,
+                data: c.data.map(d => ({
+                    ...d,
+                    onPress: () => generate_special_game(d.id)
+                }))
+            }))
+
+            let ind = datam.individual
+
+            ind = ind.map(i => ({
                 ...i,
                 onPress: () => generate_special_game(i.id)
             }))
-            if (decodedToken && decodedToken.spotify) {
-                setData(data => [spotify, ...datam])
-            } else {
-                setData(datam)
-            }
+
+            setCategories(cat)
+            setIndividual(ind)
         })()
     }, [])
 
-    useEffect(() => {
-        if (decodedToken && decodedToken.spotify) {
-            if (data.filter(i => i.name == "spotify").length == 0) {
-                setData(data => [spotify, ...data])
-            }
-        }
-    }, [decodedToken])
+    const render_playlist = (item, index, len) => {
+        return (
+            <TouchableOpacity
+                onPress={item.onPress}
+            >
+                <Image
+                    style={{ height: 125, width: 125, marginLeft: 20 }}
+                    source={
+                        item.local ?
+                            item.image :
+                            { uri: item.image }
+                    }
+                />
+            </TouchableOpacity>
+        );
+    }
 
-    if (data.length == 0) {
-        return <View>
-            <ActivityIndicator />
+    const render_category = (item, index) => {
+        return <View
+            style={{
+                marginBottom: 20
+            }}
+        >
+            <Text
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Bold",
+                    marginTop: 20,
+                    marginLeft: 20,
+                    marginBottom: 10
+                }]}
+            >
+                {item.category.toUpperCase()}
+            </Text>
+            <Text
+                style={[styles.text, {
+                    textAlign: 'left',
+                    fontFamily: "Gilroy-Medium",
+                    marginBottom: 20,
+                    marginLeft: 20,
+                    marginRight: 20
+                }]}
+            >
+                {item.description}
+            </Text>
+            <FlatList
+                horizontal
+                data={item.data}
+                renderItem={({ item, index }) => {
+                    return render_playlist(item, index)
+                }}
+            />
         </View>
     }
 
+    if (categories.length == 0 || individual.length == 0) {
+        return <WaitingView />
+    }
+
     return (
-        <ScrollView 
-            scrollEnabled={false}
-            contentContainerStyle={[styles.container, {
-                alignItems: "flex-start",
-                justifyContent: "flex-start"
-            }]}
+        <FlatList
             style={{
                 backgroundColor: "#091227",
             }}
-        >
-            <View
-                style={{
-                    paddingRight: 20,
-                    paddingLeft: 20
-                }}
-            >
-                <Image 
-                    source={require("../assets/logo/logo.png")}
+            data={categories}
+            ListHeaderComponent={
+                <View
                     style={{
-                        marginTop: 50,
-                        width: 150,
-                        height: 40,
-                        marginBottom: 30
+                        paddingRight: 20,
+                        paddingLeft: 20
                     }}
-                />
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Bold",
-                        marginTop: 30
-                    }]}
                 >
-                    BLINDTEST CLASSIQUE
-                </Text>
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Medium",
-                        marginTop: 20
-                    }]}
-                >
-                    Lance un blindtest avec une des playlist de Maestro ou en utilisant tes playlists Spotify 
-                </Text>
-            </View>
-            <View
-                style={{
-                    height: 125,
-                    marginTop: 30,
-                    marginBottom: 20,
-                }}
-            >
-                <FlatList 
-                    horizontal={true}
-                    data={data}
-                    renderItem={({item, index}) => {
-                        return (
-                            <TouchableOpacity
-                                onPress={item.onPress}  
+                    <Image
+                        source={require("../assets/logo/logo.png")}
+                        style={{
+                            marginTop: 50,
+                            width: 150,
+                            height: 40,
+                            marginBottom: 20
+                        }}
+                    />
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Medium",
+                            marginTop: 20,
+                            marginBottom: 20
+                        }]}
+                    >
+                        Faites des blindtest seul, en famille, avec des amis, dans la même pièce ou de l'autre bout du monde avec Maestro!
+                    </Text>
+                    <View
+                        style={{
+                            paddingLeft: 20,
+                            paddingRight: 20,
+                            marginBottom: 20,
+                            width: '100%'
+                        }}
+                    >
+                        <Button
+                            mode="outlined"
+                            style={styles.button}
+                            labelStyle={styles.text}
+                            icon="arrow-right-bold-circle"
+                            onPress={() => navigation.navigate("join")}
+                        >
+                            Rejoindre un blindtest
+                        </Button>
+                        {decodedToken && decodedToken.spotify ?
+                            <Button
+                                mode="outlined"
+                                style={[styles.button, {
+                                    marginTop: 15
+                                }]}
+                                labelStyle={styles.text}
+                                icon="spotify"
+                                onPress={() => navigation.navigate("create")}
                             >
-                                <Image 
-                                    style={{ height: 125, width: 125, marginLeft: 20, marginRight: (index == data.length - 1) ? 20 : 0}} 
-                                    source={
-                                        item.local ? 
-                                        item.image :
-                                        {uri: item.image}
-                                     }
-                                />
-                            </TouchableOpacity>
-                        );
-                    }}
-                />
-            </View>
-            <View
-                style={{
-                    paddingLeft: 20,
-                    paddingRight: 20,
-                    width: '100%'
-                }}
-            >
-                <Button
-                    mode="outlined"
-                    style={styles.button}
-                    labelStyle={styles.text}
-                    icon="arrow-right-bold-circle"
-                    onPress={() => navigation.navigate("join")}
-                >
-                    Rejoindre un blindtest
-                </Button>
-            </View>
-            {/* <View
-                style={{
-                    paddingRight: 20,
-                    paddingLeft: 20,
-                    width: '100%',
-                }}
-            >
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Bold",
-                        marginTop: 40
-                    }]}
-                >
-                    BLINDTEST BATTLEROYAL
-                </Text>
-                <Text
-                    style={[styles.text, {
-                        textAlign: 'left',
-                        fontFamily: "Gilroy-Medium",
-                        marginTop: 10
-                    }]}
-                >
-                    Une erreur et tu es éliminé, pas d'erreur et tu deviens le Maestro !
-                </Text>
+                                Jouer avec tes playlists
+                            </Button>
+                            :
+                            <Button
+                                style={[{
+                                    alignContent: 'center',
+                                    marginTop: 15
+                                }]}
+                                labelStyle={[styles.text, {
+                                    color: "#535f7a"
+                                }]}
+                                icon="spotify"
+                                onPress={() => alert("Connecte toi à Spotify dans les paramètres pour faire tes propres blindtest")}
+                            >
+                                Jouer avec tes playlists
+                            </Button>}
+                    </View>
+                </View>
+            }
+            ListFooterComponent={
                 <View
                     style={{
-                        height: 75,
-                        width: '100%',
-                        overflow: 'hidden',
-                        backgroundColor: "red",
-                        marginTop: 20
+                        marginBottom: 50
                     }}
                 >
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Bold",
+                            marginTop: 20,
+                            marginLeft: 20,
+                            marginBottom: 10
+                        }]}
+                    >
+                        Uncategorized playlist
+                    </Text>
+                    <Text
+                        style={[styles.text, {
+                            textAlign: 'left',
+                            fontFamily: "Gilroy-Medium",
+                            marginBottom: 20,
+                            marginLeft: 20,
+                            marginRight: 20
+                        }]}
+                    >
+                        Une selection de playlists fun et unique, elles sont toutes différentes et englobe tous les styles musicaux
+                    </Text>
+                    <FlatList
+                        data={individual}
+                        columnWrapperStyle={{
+                            marginBottom: 20,
+                            justifyContent: "center",
+                        }}
+                        renderItem={({ item, index }) => {
+                            const get_offset = (index) => {
+                                if (individual.length % 2 == 1 && index == individual.length - 1) return {}
+                                if (index % 2 == 1) {
+                                    return {
+                                        marginLeft: 10
+                                    }
+                                } else {
+                                    return {
+                                        marginRight: 10
+                                    }
+                                }
+                            }
+                            return (
+                                <TouchableOpacity
+                                    onPress={item.onPress}
+                                >
+                                    <Image
+                                        style={{ height: 125, width: 125, ...get_offset(index) }}
+                                        source={
+                                            item.local ?
+                                                item.image :
+                                                { uri: item.image }
+                                        }
+                                    />
+                                </TouchableOpacity>
+                            )
+                        }}
+                        numColumns={2}
+                    />
                 </View>
-                <View
-                    style={{
-                        height: 75,
-                        width: '100%',
-                        overflow: 'hidden',
-                        backgroundColor: "green",
-                        marginTop: 20
-                    }}
-                >
-                </View>
-            </View>
-            <View 
-                style={{
-                    height: 50,
-                    width: '100%',
-                }}
-            /> */}
-        </ScrollView>
+            }
+            numColumns={1}
+            renderItem={({ item, index }) => {
+                return render_category(item)
+            }}
+        />
     )
 }
 
@@ -228,7 +298,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center"
     },
-    logo:{
+    logo: {
         color: "#FFFFFF",
         fontFamily: "Gilroy-Black",
         paddingBottom: 50,

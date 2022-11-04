@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native" 
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native"
 import { Button, DataTable } from "react-native-paper"
 import { SocketContext } from "../store/socket"
 import { Audio } from 'expo-av';
@@ -30,33 +30,31 @@ export default Game = ({ navigation, route }) => {
             let { launch_date } = data
             try {
                 console.log("loading the song")
-    
-                await Audio.setAudioModeAsync({ 
+
+                await Audio.setAudioModeAsync({
                     playsInSilentModeIOS: true,
                 });
-    
+
                 let file = musicDir + gameRounds[data.round].id + ".mp3"
                 // console.log(gameRounds[data.round].preview_url, data.round)
                 let test = await Audio.Sound.createAsync({
                     uri: file
                 }, {
                     shouldPlay: false,
-                }, ).catch(e => console.log("CATCH", e))
-    
+                },).catch(e => console.log("CATCH", e))
+
                 audio.current = test.sound
             } catch (e) {
                 console.log(e)
             }
-    
-            setTimeout(() => {
-                launch_new_round(data)
-            }, new Date(launch_date) - new Date())
+
+            launch_new_round(data)
         })
-    
+
         socket.current.on("round result", async () => {
             setGameState("results")
         })
-    
+
         socket.current.on("leaderboard", async (data) => {
             await audio.current.pauseAsync()
             await audio.current.unloadAsync()
@@ -64,7 +62,7 @@ export default Game = ({ navigation, route }) => {
             setLeader(data)
             setGameState("leaderboard")
         })
-    
+
         socket.current.on("final screen", () => {
             setGameState("final")
         })
@@ -108,19 +106,19 @@ export default Game = ({ navigation, route }) => {
             <DataTable
                 style={{
                     width: '100%',
-                    flex: gameState == "final" ? null: 1,
+                    flex: gameState == "final" ? null : 1,
                     backgroundColor: "white"
                 }}
             >
                 <DataTable.Header>
                     <DataTable.Title >Place</DataTable.Title>
-                    <DataTable.Title style={{flex: 3}}>Pseudo</DataTable.Title>
+                    <DataTable.Title style={{ flex: 3 }}>Pseudo</DataTable.Title>
                     <DataTable.Title numeric>Points</DataTable.Title>
                 </DataTable.Header>
-                {leader.sort((a,b) => b.score - a.score).map((user, i) => (
+                {leader.sort((a, b) => b.score - a.score).map((user, i) => (
                     <DataTable.Row>
                         <DataTable.Cell>{i + 1}</DataTable.Cell>
-                        <DataTable.Cell style={{flex: 3}}>{user.name}</DataTable.Cell>
+                        <DataTable.Cell style={{ flex: 3 }}>{user.name}</DataTable.Cell>
                         <DataTable.Cell numeric>{user.score}</DataTable.Cell>
                     </DataTable.Row>
                 ))}
@@ -140,6 +138,7 @@ export default Game = ({ navigation, route }) => {
         return <ScrollView
             contentContainerStyle={{
                 alignItems: "center",
+                paddingBottom: 200
             }}
             style={styles.container}
         >
@@ -172,12 +171,12 @@ export default Game = ({ navigation, route }) => {
                 }}
             >
                 <DataTable.Header>
-                    <DataTable.Title style={{flex: 3}} numberOfLines={2}>Musique</DataTable.Title>
+                    <DataTable.Title style={{ flex: 3 }} numberOfLines={2}>Musique</DataTable.Title>
                     <DataTable.Title numeric>Passage</DataTable.Title>
                 </DataTable.Header>
                 {gameRounds.map((i, ii) => (
                     <DataTable.Row>
-                        <DataTable.Cell style={{flex: 3}}>{i.choices[i.result_index]}</DataTable.Cell>
+                        <DataTable.Cell style={{ flex: 3 }}>{i.choices[i.result_index]}</DataTable.Cell>
                         <DataTable.Cell numeric>{ii + 1}</DataTable.Cell>
                     </DataTable.Row>
                 ))}
@@ -252,7 +251,7 @@ export default Game = ({ navigation, route }) => {
                                     date: new Date().getTime()
                                 }))
                                 setHightlight(i)
-                            } : () => { alert("vous ne pouvez voter qu'une fois!")}}
+                            } : () => { alert("vous ne pouvez voter qu'une fois!") }}
                         >
                             <Text
                                 style={styles.text}
@@ -291,7 +290,7 @@ export default Game = ({ navigation, route }) => {
                 </Text>
             )}
             {gameState == "final" && (
-                <Image 
+                <Image
                     source={require("../assets/logo/logo.png")}
                     style={{
                         width: 150,
@@ -301,7 +300,7 @@ export default Game = ({ navigation, route }) => {
                     }}
                 />
             )}
-            
+
             <Text
                 style={{
                     ...styles.text,
@@ -320,29 +319,29 @@ export default Game = ({ navigation, route }) => {
                         width: "100%"
                     }}
                 >
-                <Button
-                    icon="door"
-                    mode="contained"
-                    color="red"
-                    style={{
-                        position: "absolute",
-                        bottom: 30,
-                        borderRadius: 30,
-                        paddingLeft: 10,
-                        paddingRight: 10,
-                        padding: 5
-                    }}
-                    onPress={() => {
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ 
-                                name: 'home',
-                            }],
-                        });
-                    }}
-                >
-                    Revenir au menu
-                </Button>
+                    <Button
+                        icon="door"
+                        mode="contained"
+                        color="red"
+                        style={{
+                            position: "absolute",
+                            bottom: 30,
+                            borderRadius: 30,
+                            paddingLeft: 10,
+                            paddingRight: 10,
+                            padding: 5
+                        }}
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{
+                                    name: 'home',
+                                }],
+                            });
+                        }}
+                    >
+                        Revenir au menu
+                    </Button>
                 </ View>
             )}
         </View>
@@ -357,7 +356,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "column",
     },
-    logo:{
+    logo: {
         color: "#FFFFFF",
         fontFamily: "Gilroy-Black",
         paddingBottom: 50,

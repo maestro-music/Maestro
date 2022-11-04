@@ -10,6 +10,7 @@ import WaitingPlayer from "../components/waiting_player"
 import * as FileSystem from 'expo-file-system';
 import { SocketContext } from "../store/socket"
 import { TokenContext } from "../store/token"
+import { WaitingView } from "../components/waiting"
 
 export default Create = ({ navigation, route }) => {
     const socket = useContext(SocketContext)
@@ -44,10 +45,10 @@ export default Create = ({ navigation, route }) => {
                 "authorization": "Bearer " + token
             }
         }).then(data => data.json())
-        .then(data => {
-            setPlaylistData(data.playlist_data)
-            setLoading(false)
-        })
+            .then(data => {
+                setPlaylistData(data.playlist_data)
+                setLoading(false)
+            })
 
         socket.current = io(config.API, {
             query: {
@@ -84,8 +85,13 @@ export default Create = ({ navigation, route }) => {
         socket.current.on("go to game page", (data) => {
             data = JSON.parse(data)
             navigation.reset({
-                index: 0,
+                index: 1,
                 routes: [{
+                    name: "home",
+                    params: {
+                        socket_shoud_not_quit: true
+                    }
+                }, {
                     name: 'game',
                     params: {
                         game_id: game_id,
@@ -120,7 +126,7 @@ export default Create = ({ navigation, route }) => {
                             fontFamily: "Gilroy-Medium",
                         }]}
                     >
-                        Trouve le titre qui joue avant tout le monde ! Tous les titres sont dans la playlist suivante :
+                        Trouve le titre qui joue avant tout le monde ! Playlist choisie :
                     </Text>
                     <View
                         style={{
@@ -255,11 +261,7 @@ export default Create = ({ navigation, route }) => {
     }
 
     if (loading) {
-        return <View
-            style={styles.container}
-        >
-            <ActivityIndicator />
-        </View>
+        return <WaitingView />
     }
 
     return (

@@ -8,5 +8,12 @@ In maestro you can:
  - play with as many friend as you want
  - for free
 
+### Usage
+This app is using expo : 
+
+```
+npm install && npx expo start
+```
+
 ### Licence
 CC BY-NC 3.0 FR

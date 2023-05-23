@@ -1,4 +1,4 @@
-![pres](https://github.com/maestro-music/maestro-app/assets/34143515/a3981dbd-7a40-44a8-8b76-2c74fa936759)
+![pres](https://github.com/maestro-music/Maestro/assets/34143515/09e7e476-58a7-48e6-801d-6b9d698d3c99)
 
 # Maestro Blindtest
 Maestro Blindtest is a mobile app deployed on the appstore and the playstore.
